@@ -263,11 +263,29 @@ impl Encode for String {
     }
 }
 
+#[cfg(not(feature = "std"))]
+impl Encode for alloc::string::String {
+    fn encode(&self, writer: &mut Writer) -> Result<()> {
+        self.as_bytes().to_vec().encode(writer)
+    }
+}
+
 #[cfg(feature = "std")]
 impl Decode for String {
     fn decode(reader: &mut Reader) -> Result<Self> {
         let bytes = Vec::<u8>::decode(reader)?;
         String::from_utf8(bytes)
+            .map_err(|e| crate::error::JustcodeError::custom(format!("invalid UTF-8: {}", e)))
+    }
+}
+
+#[cfg(not(feature = "std"))]
+impl Decode for alloc::string::String {
+    fn decode(reader: &mut Reader) -> Result<Self> {
+        extern crate alloc;
+        use alloc::format;
+        let bytes = Vec::<u8>::decode(reader)?;
+        alloc::string::String::from_utf8(bytes)
             .map_err(|e| crate::error::JustcodeError::custom(format!("invalid UTF-8: {}", e)))
     }
 }

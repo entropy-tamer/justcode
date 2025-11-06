@@ -204,7 +204,18 @@ pub fn derive_decode(input: TokenStream) -> TokenStream {
                 let variant_idx = decode_length(reader, reader.config())? as u32;
                 match variant_idx {
                     #(#variant_decodes,)*
-                    _ => Err(justcode_core::error::JustcodeError::custom(format!("invalid variant index: {}", variant_idx))),
+                    _ => {
+                        #[cfg(feature = "std")]
+                        {
+                            Err(justcode_core::error::JustcodeError::custom(format!("invalid variant index: {}", variant_idx)))
+                        }
+                        #[cfg(not(feature = "std"))]
+                        {
+                            extern crate alloc;
+                            use alloc::format;
+                            Err(justcode_core::error::JustcodeError::custom(format!("invalid variant index: {}", variant_idx)))
+                        }
+                    }
                 }
             }
         }

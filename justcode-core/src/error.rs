@@ -2,8 +2,16 @@
 
 use thiserror::Error;
 
+#[cfg(feature = "std")]
+use std::string::String;
+
+#[cfg(not(feature = "std"))]
+extern crate alloc;
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
+
 /// Result type for justcode operations.
-pub type Result<T> = std::result::Result<T, JustcodeError>;
+pub type Result<T> = core::result::Result<T, JustcodeError>;
 
 /// Errors that can occur during encoding or decoding.
 #[derive(Error, Debug, Clone, PartialEq, Eq)]

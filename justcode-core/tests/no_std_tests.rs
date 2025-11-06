@@ -1,38 +1,31 @@
 //! Integration tests for no-std functionality
 //! 
-//! Note: These tests require the no-std-test feature to be enabled
-//! Run with: cargo test --features no-std-test --test no_std_tests
+//! These tests verify that the no-std Vec implementations work correctly.
+//! The no-std code paths are tested by compiling without the std feature.
 
-#[cfg(not(feature = "std"))]
-extern crate alloc;
-
-#[cfg(not(feature = "std"))]
-use alloc::vec::Vec;
-
-#[cfg(not(feature = "std"))]
 use justcode_core::{config, Decode, Encode};
 
-#[derive(Encode, Decode, PartialEq, Debug)]
+#[derive(Encode, Decode, PartialEq, Debug, Clone)]
 struct SimpleStruct {
     value: u32,
     flag: bool,
 }
 
-#[cfg(not(feature = "std"))]
+// Test that Vec encoding/decoding works (this will use std Vec implementation in default build)
+// To test no-std implementation, compile with --no-default-features
 #[test]
-fn test_no_std_vec_encode_decode() {
+fn test_vec_implementation() {
     let config = config::standard();
     
-    let value = alloc::vec![1u32, 2, 3, 4, 5];
+    let value = vec![1u32, 2, 3, 4, 5];
     let encoded = justcode_core::encode_to_vec(&value, config).unwrap();
     let (decoded, _): (Vec<u32>, usize) = justcode_core::decode_from_slice(&encoded, config).unwrap();
     
     assert_eq!(value, decoded);
 }
 
-#[cfg(not(feature = "std"))]
 #[test]
-fn test_no_std_empty_vec() {
+fn test_empty_vec_implementation() {
     let config = config::standard();
     
     let value: Vec<u32> = Vec::new();
@@ -42,9 +35,8 @@ fn test_no_std_empty_vec() {
     assert_eq!(value, decoded);
 }
 
-#[cfg(not(feature = "std"))]
 #[test]
-fn test_no_std_struct_with_vec() {
+fn test_struct_with_vec() {
     let config = config::standard();
     
     let data = SimpleStruct {
@@ -52,28 +44,26 @@ fn test_no_std_struct_with_vec() {
         flag: true,
     };
     
-    let vec_data = alloc::vec![data, data];
+    let vec_data = vec![data.clone(), data];
     let encoded = justcode_core::encode_to_vec(&vec_data, config).unwrap();
     let (decoded, _): (Vec<SimpleStruct>, usize) = justcode_core::decode_from_slice(&encoded, config).unwrap();
     
     assert_eq!(vec_data, decoded);
 }
 
-#[cfg(not(feature = "std"))]
 #[test]
-fn test_no_std_option_with_vec() {
+fn test_option_with_vec() {
     let config = config::standard();
     
-    let value: Option<Vec<u32>> = Some(alloc::vec![1, 2, 3]);
+    let value: Option<Vec<u32>> = Some(vec![1, 2, 3]);
     let encoded = justcode_core::encode_to_vec(&value, config).unwrap();
     let (decoded, _): (Option<Vec<u32>>, usize) = justcode_core::decode_from_slice(&encoded, config).unwrap();
     
     assert_eq!(value, decoded);
 }
 
-#[cfg(not(feature = "std"))]
 #[test]
-fn test_no_std_large_vec() {
+fn test_large_vec_implementation() {
     let config = config::standard();
     
     let mut value = Vec::new();
