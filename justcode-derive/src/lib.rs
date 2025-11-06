@@ -56,7 +56,7 @@ pub fn derive_encode(input: TokenStream) -> TokenStream {
                         quote! {
                             #name::#variant_name { #(#field_names,)* } => {
                                 use justcode_core::varint::encode_length;
-                                encode_length(writer, #variant_idx, writer.config())?;
+                                encode_length(writer, #variant_idx as usize, writer.config())?;
                                 #(#field_encodes)*
                             }
                         }
@@ -71,10 +71,11 @@ pub fn derive_encode(input: TokenStream) -> TokenStream {
                                 #index.encode(writer)?;
                             }
                         });
+                        let field_patterns = field_indices.iter();
                         quote! {
-                            #name::#variant_name(#(#field_indices,)*) => {
+                            #name::#variant_name(#(#field_patterns,)*) => {
                                 use justcode_core::varint::encode_length;
-                                encode_length(writer, #variant_idx, writer.config())?;
+                                encode_length(writer, #variant_idx as usize, writer.config())?;
                                 #(#field_encodes)*
                             }
                         }
@@ -83,7 +84,7 @@ pub fn derive_encode(input: TokenStream) -> TokenStream {
                         quote! {
                             #name::#variant_name => {
                                 use justcode_core::varint::encode_length;
-                                encode_length(writer, #variant_idx, writer.config())?;
+                                encode_length(writer, #variant_idx as usize, writer.config())?;
                             }
                         }
                     }
@@ -163,7 +164,7 @@ pub fn derive_decode(input: TokenStream) -> TokenStream {
             let variant_decodes = data_enum.variants.iter().enumerate().map(|(idx, variant)| {
                 let variant_idx = idx as u32;
                 let variant_name = &variant.ident;
-                let variant_fields = match &variant.fields {
+                match &variant.fields {
                     Fields::Named(fields) => {
                         let field_decodes = fields.named.iter().map(|field| {
                             let field_name = &field.ident;
@@ -173,7 +174,9 @@ pub fn derive_decode(input: TokenStream) -> TokenStream {
                             }
                         });
                         quote! {
-                            { #(#field_decodes,)* }
+                            #variant_idx => Ok(#name::#variant_name {
+                                #(#field_decodes,)*
+                            })
                         }
                     }
                     Fields::Unnamed(fields) => {
@@ -184,20 +187,23 @@ pub fn derive_decode(input: TokenStream) -> TokenStream {
                             }
                         });
                         quote! {
-                            (#(#field_decodes,)*)
+                            #variant_idx => Ok(#name::#variant_name(
+                                #(#field_decodes,)*
+                            ))
                         }
                     }
-                    Fields::Unit => quote! {},
-                };
-                quote! {
-                    #variant_idx => Ok(#name::#variant_name #variant_fields)
+                    Fields::Unit => {
+                        quote! {
+                            #variant_idx => Ok(#name::#variant_name)
+                        }
+                    }
                 }
             });
             quote! {
                 use justcode_core::varint::decode_length;
                 let variant_idx = decode_length(reader, reader.config())? as u32;
                 match variant_idx {
-                    #(#variant_decodes)*
+                    #(#variant_decodes,)*
                     _ => Err(justcode_core::error::JustcodeError::custom(format!("invalid variant index: {}", variant_idx))),
                 }
             }

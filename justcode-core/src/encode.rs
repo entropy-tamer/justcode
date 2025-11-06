@@ -256,12 +256,14 @@ impl<T: Decode> Decode for Option<T> {
     }
 }
 
+#[cfg(feature = "std")]
 impl Encode for String {
     fn encode(&self, writer: &mut Writer) -> Result<()> {
         self.as_bytes().to_vec().encode(writer)
     }
 }
 
+#[cfg(feature = "std")]
 impl Decode for String {
     fn decode(reader: &mut Reader) -> Result<Self> {
         let bytes = Vec::<u8>::decode(reader)?;
@@ -270,6 +272,7 @@ impl Decode for String {
     }
 }
 
+#[cfg(feature = "std")]
 impl Encode for &str {
     fn encode(&self, writer: &mut Writer) -> Result<()> {
         self.as_bytes().to_vec().encode(writer)
@@ -733,5 +736,31 @@ mod tests {
         let mut reader = crate::reader::Reader::new(&bytes, config);
         let result: Result<String> = String::decode(&mut reader);
         assert!(result.is_err());
+    }
+}
+
+// Test no-std Vec implementations when std feature is disabled
+#[cfg(all(test, not(feature = "std")))]
+mod no_std_tests {
+    use super::*;
+    use crate::config;
+    extern crate alloc;
+
+    #[test]
+    fn test_no_std_vec_encode() {
+        let config = config::standard();
+        let value = alloc::vec![1u32, 2, 3, 4, 5];
+        let encoded = crate::encode_to_vec(&value, config).unwrap();
+        let (decoded, _): (alloc::vec::Vec<u32>, usize) = crate::decode_from_slice(&encoded, config).unwrap();
+        assert_eq!(value, decoded);
+    }
+
+    #[test]
+    fn test_no_std_vec_empty() {
+        let config = config::standard();
+        let value: alloc::vec::Vec<u32> = alloc::vec![];
+        let encoded = crate::encode_to_vec(&value, config).unwrap();
+        let (decoded, _): (alloc::vec::Vec<u32>, usize) = crate::decode_from_slice(&encoded, config).unwrap();
+        assert_eq!(value, decoded);
     }
 }

@@ -5,6 +5,8 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 description = "Derive macros for justcode"
+repository = "https://github.com/entropy-tamer/justcode"
+homepage = "https://github.com/entropy-tamer/justcode"
 
 [lib]
 proc-macro = true

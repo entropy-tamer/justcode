@@ -6,6 +6,8 @@ authors.workspace = true
 license.workspace = true
 description.workspace = true
 readme = "../README.md"
+repository = "https://github.com/entropy-tamer/justcode"
+homepage = "https://github.com/entropy-tamer/justcode"
 keywords = ["serialization", "binary", "encoding", "decoding", "compact"]
 categories = ["encoding", "no-std"]
 
@@ -13,6 +15,7 @@ categories = ["encoding", "no-std"]
 default = ["std", "derive"]
 std = []
 derive = ["justcode-derive"]
+no-std-test = []
 
 [dependencies]
 thiserror.workspace = true
