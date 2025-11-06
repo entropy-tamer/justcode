@@ -71,7 +71,7 @@ pub fn derive_encode(input: TokenStream) -> TokenStream {
                                 #index.encode(writer)?;
                             }
                         });
-                        let field_patterns = field_indices.iter();
+                        let field_patterns = field_indices.clone();
                         quote! {
                             #name::#variant_name(#(#field_patterns,)*) => {
                                 use justcode_core::varint::encode_length;
