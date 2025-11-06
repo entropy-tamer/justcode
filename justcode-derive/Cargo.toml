@@ -1,0 +1,22 @@
+[package]
+name = "justcode-derive"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Derive macros for justcode"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn.workspace = true
+quote.workspace = true
+proc-macro2.workspace = true
+
+[lints.clippy]
+pedantic = "warn"
+nursery = "warn"
+cargo = "warn"
+all = "warn"
+
