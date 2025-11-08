@@ -34,4 +34,3 @@ pedantic = "warn"
 nursery = "warn"
 cargo = "warn"
 all = "warn"
-

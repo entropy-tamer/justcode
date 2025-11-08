@@ -326,5 +326,3 @@ class TestVersion:
         assert hasattr(justcode, "__version__")
         assert isinstance(justcode.__version__, str)
         assert justcode.__version__ == "0.3.0"
-
-
